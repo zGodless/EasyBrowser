@@ -1,0 +1,10 @@
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\bin\Debug\EasyBrowser.exe.config
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\bin\Debug\EasyBrowser.exe
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\bin\Debug\EasyBrowser.pdb
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\obj\Debug\EasyBrowser.Form1.resources
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\obj\Debug\EasyBrowser.Properties.Resources.resources
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\obj\Debug\EasyBrowser.csproj.GenerateResource.cache
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\obj\Debug\EasyBrowser.csproj.CoreCompileInputs.cache
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\obj\Debug\EasyBrowser.exe
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\obj\Debug\EasyBrowser.pdb
+F:\张永亮\Github\EasyBrowser\EasyBrowser\EasyBrowser\obj\Debug\EasyBrowser.csprojAssemblyReference.cache

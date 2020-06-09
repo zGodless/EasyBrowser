@@ -33,22 +33,24 @@
             // 
             // simpleButton1
             // 
+            this.simpleButton1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
             this.simpleButton1.Location = new System.Drawing.Point(619, -1);
             this.simpleButton1.Name = "simpleButton1";
             this.simpleButton1.Size = new System.Drawing.Size(22, 23);
             this.simpleButton1.TabIndex = 0;
             this.simpleButton1.Text = "button1";
-            this.simpleButton1.UseVisualStyleBackColor = true;
+            this.simpleButton1.UseVisualStyleBackColor = false;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(640, 117);
+            this.ClientSize = new System.Drawing.Size(1220, 884);
             this.Controls.Add(this.simpleButton1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "Form1";
             this.Opacity = 0.1D;
+            this.Padding = new System.Windows.Forms.Padding(5);
             this.Text = "Form1";
             this.ResumeLayout(false);
 

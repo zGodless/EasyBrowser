@@ -24,6 +24,14 @@ namespace EasyBrowser
             InitEvent();
             Init();
         }
+        public Form1(IntPtr Handle)
+        {
+            SendToHandle = Handle;
+            InitializeComponent();
+            InitBrowser();
+            InitEvent();
+            Init();
+        }
         #region 属性
 
         public string[] StoryText { get; set; }   //放置当前文本
@@ -49,17 +57,33 @@ namespace EasyBrowser
 
         //URL窗体
         public FormURL FormUrl;
+
+        bool isMouseDown = false; //表示鼠标当前是否处于按下状态，初始值为否 
+        MouseDirection direction = MouseDirection.None;//表示拖动的方向，起始为None，表示不拖动
+        Point mouseOff;//鼠标移动位置变量
+        /// <summary>
+        /// 接收窗口的句柄
+        /// </summary>
+        private IntPtr SendToHandle;
+        public const int USER = 0x500;
+        /// <summary>
+        /// 自定义的消息ID
+        /// </summary>
+        public const int MYMESSAGE = USER + 1;
         #endregion
         #region 初始化
         public void InitBrowser()
         {
             Cef.Initialize(new CefSettings());
-            browser = new ChromiumWebBrowser("http://www.baidu.com");
+            IRequestContext requestContext = new RequestContext();
+            browser = new ChromiumWebBrowser("http://www.baidu.com", requestContext);
             Font font = new Font("微软雅黑", 5.5f);
             this.Controls.Add(browser);
             browser.Font = font;
             browser.Dock = DockStyle.Fill;
+            browser.LifeSpanHandler = new OpenPageSelf();//实现同一窗口打开链接
             browser.LoadingStateChanged += LoadingStateChangeds;
+            
         }
         public void Init()
         {
@@ -83,14 +107,17 @@ namespace EasyBrowser
                 new MyKey{ id = 1071,  keyA = HotKey.KeyModifiers.Ctrl, keyB = Keys.Up, op = operateMode.formUp },
                 new MyKey{ id = 1072, keyA = HotKey.KeyModifiers.Ctrl, keyB = Keys.Down, op = operateMode.formDown },
                 new MyKey{ id = 1073, keyA = HotKey.KeyModifiers.Ctrl, keyB = Keys.Left, op = operateMode.formLeft },
-                new MyKey{ id = 1074, keyA = HotKey.KeyModifiers.Ctrl, keyB = Keys.Right, op = operateMode.formRight }
+                new MyKey{ id = 1074, keyA = HotKey.KeyModifiers.Ctrl, keyB = Keys.Right, op = operateMode.formRight },
+                //前进后退
+                new MyKey{ id = 1041,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.S, op = operateMode.prePage },
+                new MyKey{ id = 1042,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.D, op = operateMode.nextPage },
 
             });
             //注册热键
             keyList.ForEach(m => HotKey.RegisterHotKey(Handle, m.id, m.keyA, m.keyB));
 
             //窗体置顶层
-            SetWindowPos(this.Handle, -1, 0, 0, 0, 0, 1 | 2);
+            DllImport.SetWindowPos(this.Handle, -1, 0, 0, 0, 0, 1 | 2);
 
         }
 
@@ -100,9 +127,12 @@ namespace EasyBrowser
             Load += Form1_Load;
 
             //鼠标点击事件
-            simpleButton1.MouseDown += Form1_MouseDown;
-            simpleButton1.MouseMove += Form1_MouseMove;
-            simpleButton1.MouseUp += Form1_MouseUp;
+            simpleButton1.MouseDown += btn_MouseDown;
+            simpleButton1.MouseMove += btn_MouseMove;
+            simpleButton1.MouseUp += btn_MouseUp;
+            this.MouseDown += Form1_MouseDown1;
+            MouseUp += Form1_MouseUp;
+            MouseMove += Form1_MouseMove;
         }
 
         #endregion
@@ -145,7 +175,7 @@ namespace EasyBrowser
             Location = new Point(x, y);//定位
         }
 
-        private void Form1_MouseUp(object sender, MouseEventArgs e)
+        private void btn_MouseUp(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
@@ -155,7 +185,7 @@ namespace EasyBrowser
             }
         }
 
-        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        private void btn_MouseMove(object sender, MouseEventArgs e)
         {
             if (beginMove)
             {
@@ -164,16 +194,76 @@ namespace EasyBrowser
                 this.Top += MousePosition.Y - currentYPosition;//根据鼠标的y坐标窗体的顶部，即Y坐标  
                 currentXPosition = MousePosition.X;
                 currentYPosition = MousePosition.Y;
-            }
+            } 
         }
 
-        private void Form1_MouseDown(object sender, MouseEventArgs e)
+        private void btn_MouseDown(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
                 beginMove = true;
                 currentXPosition = MousePosition.X;//鼠标的x坐标为当前窗体左上角x坐标  
                 currentYPosition = MousePosition.Y;//鼠标的y坐标为当前窗体左上角y坐标  
+            }
+        }
+
+
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+            //鼠标移动到边缘，改变鼠标的图标
+            if (e.Location.X >= this.Width - 5)
+            {
+                this.Cursor = Cursors.SizeWE;
+                direction = MouseDirection.Herizontal;
+            }
+            else if (e.Location.Y >= this.Height - 5)
+            {
+                this.Cursor = Cursors.SizeNS;
+                direction = MouseDirection.Vertical;
+            }
+            //否则，以外的窗体区域，鼠标星座均为单向箭头（默认）             
+            else
+            {
+                this.Cursor = Cursors.Arrow;
+
+            }
+            if (e.Location.X >= (this.Width + this.Left + 10) || (e.Location.Y > this.Height + this.Top + 10))
+            {
+                isMouseDown = false;
+            }
+
+            //设定好方向后，调用下面方法，改变窗体大小  
+            ResizeWindow();
+        }
+
+        private void Form1_MouseUp(object sender, MouseEventArgs e)
+        {
+            isMouseDown = false;
+            direction = MouseDirection.None;
+        }
+
+        private void Form1_MouseDown1(object sender, MouseEventArgs e)
+        {
+            mouseOff = new Point(-e.X, -e.Y); //记录鼠标位置
+                                              //当鼠标的位置处于边缘时，允许进行改变大小。
+
+            if (e.Location.X >= this.Width - 10 && e.Location.Y > this.Height - 10)
+            {
+                isMouseDown = true;
+            }
+            else if (e.Location.X >= this.Width - 5)
+            {
+                isMouseDown = true;
+            }
+            else if (e.Location.Y >= this.Height - 5)
+            {
+                isMouseDown = true;
+            }
+            else
+            {
+                this.Cursor = Cursors.Arrow;//改变鼠标样式为原样
+                isMouseDown = false;
+                //SendMessage(this.Handle, WM_SYSCOMMAND, SC_MOVE + HTCAPTION, 0);//鼠标移动事件
             }
         }
 
@@ -289,25 +379,31 @@ namespace EasyBrowser
                             break;
                         //窗体移动
                         case operateMode.formUp:
-                            GetWindowRect(Handle, ref currentRect);
+                            DllImport.GetWindowRect(Handle, ref currentRect);
                             Top--;
                             break;
                         case operateMode.formDown:
                             currentRect = new RECT();
-                            GetWindowRect(Handle, ref currentRect);
+                            DllImport.GetWindowRect(Handle, ref currentRect);
                             Top++;
                             break;
                         case operateMode.formLeft:
                             currentRect = new RECT();
-                            GetWindowRect(Handle, ref currentRect);
+                            DllImport.GetWindowRect(Handle, ref currentRect);
                             Left--;
                             break;
                         case operateMode.formRight:
                             currentRect = new RECT();
-                            GetWindowRect(Handle, ref currentRect);
+                            DllImport.GetWindowRect(Handle, ref currentRect);
                             Left++;
                             break;
-
+                        //前进后退
+                        case operateMode.nextPage:
+                            browser.Forward();
+                            break;
+                        case operateMode.prePage:
+                            browser.Back();
+                            break;
                     }
                     break;
 
@@ -328,95 +424,32 @@ namespace EasyBrowser
         {
 
         }
+
+        private void ResizeWindow()
+        {
+
+            if (!isMouseDown)
+                return;
+
+            if (direction == MouseDirection.Herizontal)
+            {
+                this.Cursor = Cursors.SizeWE;
+                this.Width = MousePosition.X - this.Left + 5;//改变宽度
+            }
+            else if (direction == MouseDirection.Vertical)
+            {
+                this.Cursor = Cursors.SizeNS;
+                this.Height = MousePosition.Y - this.Top + 5;//改变高度
+            }
+            //鼠标不在窗口右和下边缘，把鼠标打回原型
+            else
+            {
+                this.Cursor = Cursors.Arrow;
+                isMouseDown = false;
+            }
+        }
+
         #endregion
 
-
-        class HotKey
-        {
-            //如果函数执行成功，返回值不为0。
-            //如果函数执行失败，返回值为0。要得到扩展错误信息，调用GetLastError。
-            [DllImport("user32.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-            public static extern bool RegisterHotKey(
-                IntPtr hWnd,                //要定义热键的窗口的句柄
-                int id,                     //定义热键ID（不能与其它ID重复）           
-                KeyModifiers fsModifiers,   //标识热键是否在按Alt、Ctrl、Shift、Windows等键时才会生效
-                Keys vk                     //定义热键的内容
-            );
-
-            [DllImport("user32.dll", SetLastError = true, CallingConvention = CallingConvention.Cdecl)]
-            public static extern bool UnregisterHotKey(
-                IntPtr hWnd,                //要取消热键的窗口的句柄
-                int id                      //要取消热键的ID
-            );
-
-            //定义了辅助键的名称（将数字转变为字符以便于记忆，也可去除此枚举而直接使用数值）
-            [Flags()]
-            public enum KeyModifiers
-            {
-                None = 0,
-                Alt = 1,
-                Ctrl = 2,
-                Shift = 4,
-                WindowsKey = 8
-            }
-        }
-
-        class MyKey
-        {
-            public int id { get; set; }
-            public HotKey.KeyModifiers keyA { get; set; }
-            public Keys keyB { get; set; }
-            public operateMode op { get; set; }
-            public MyKey()
-            {
-
-            }
-        }
-
-        /// <summary>
-        /// 操作模式枚举
-        /// </summary>
-        enum operateMode
-        {
-            [Description("上一页")]
-            notExist = -1,
-            [Description("上一页")]
-            prePage = 1,
-            [Description("下一页")]
-            nextPage = 2,
-            [Description("关闭")]
-            close = 3,
-            [Description("搜索")]
-            search = 4,
-            [Description("减透明度")]
-            reduceOpacity = 5,
-            [Description("加透明度")]
-            addOpacity = 6,
-            [Description("窗体拖动：上")]
-            formUp = 7,
-            [Description("窗体拖动：下")]
-            formDown = 8,
-            [Description("窗体拖动：左")]
-            formLeft = 9,
-            [Description("窗体拖动：右")]
-            formRight = 10
-
-        }
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern int SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int y, int Width, int Height, int flags);
-
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        static extern bool GetWindowRect(IntPtr hWnd, ref RECT lpRect);
-
-        [StructLayout(LayoutKind.Sequential)]
-        public struct RECT
-        {
-            public int Left; //最左坐标
-            public int Top; //最上坐标
-            public int Right; //最右坐标
-            public int Bottom; //最下坐标
-        }
     }
 }

@@ -156,6 +156,8 @@ namespace EasyBrowser
                 ini.IniWriteValue(section, "Opacity", "0.4");
                 ini.IniWriteValue(section, "LocationX", "50");
                 ini.IniWriteValue(section, "LocationY", "1020");
+                ini.IniWriteValue(section, "Width", "1020");
+                ini.IniWriteValue(section, "Height", "1020");
             }
             if (string.IsNullOrEmpty(ini.IniReadValue(section, "Opacity")))
             {
@@ -169,10 +171,22 @@ namespace EasyBrowser
             {
                 ini.IniWriteValue(section, "LocationY", "1020");
             }
+            if (string.IsNullOrEmpty(ini.IniReadValue(section, "Width")))
+            {
+                ini.IniWriteValue(section, "Width", "1020");
+            }
+            if (string.IsNullOrEmpty(ini.IniReadValue(section, "Height")))
+            {
+                ini.IniWriteValue(section, "Height", "1020");
+            }
             Opacity = Convert.ToDouble(ini.IniReadValue(section, "Opacity"));     //获取上次透明度
             int x = Convert.ToInt32(ini.IniReadValue(section, "LocationX"));     //获取上次x坐标
             int y = Convert.ToInt32(ini.IniReadValue(section, "LocationY"));     //获取上次y坐标
             Location = new Point(x, y);//定位
+            int w = Convert.ToInt32(ini.IniReadValue(section, "Width"));     //获取上次窗体宽度
+            int h = Convert.ToInt32(ini.IniReadValue(section, "Height"));     //获取上次窗体高度
+            Width = w;
+            Height = h;
         }
 
         private void btn_MouseUp(object sender, MouseEventArgs e)
@@ -325,6 +339,10 @@ namespace EasyBrowser
             ini.IniWriteValue(section, "LocationY", Location.Y.ToString());
             //记录当前透明度
             ini.IniWriteValue(section, "Opacity", Opacity.ToString());
+            //记录当前窗体大小
+            ini.IniWriteValue(section, "Width", Width.ToString());
+            ini.IniWriteValue(section, "Height", Height.ToString());
+
             Close();
         }
         //重写WndProc()方法，通过监视系统消息，来调用过程

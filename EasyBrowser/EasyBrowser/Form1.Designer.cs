@@ -33,8 +33,8 @@
             // 
             // simpleButton1
             // 
-            this.simpleButton1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-            this.simpleButton1.Location = new System.Drawing.Point(619, -1);
+            this.simpleButton1.BackColor = System.Drawing.Color.White;
+            this.simpleButton1.Location = new System.Drawing.Point(-1, -1);
             this.simpleButton1.Name = "simpleButton1";
             this.simpleButton1.Size = new System.Drawing.Size(22, 23);
             this.simpleButton1.TabIndex = 0;

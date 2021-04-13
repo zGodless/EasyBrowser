@@ -34,7 +34,7 @@ namespace EasyBrowser
         }
         #region 属性
 
-        public string[] StoryText { get; set; }   //放置当前文本
+        public string[] StoryText { get; set; }   // 
         public StreamReader HoleReader { get; set; }    //文件流
         public int CurIndex { get; set; }   //当前阅读行
         private INIClass ini { get; set; }      //配置类
@@ -74,9 +74,19 @@ namespace EasyBrowser
         #region 初始化
         public void InitBrowser()
         {
-            Cef.Initialize(new CefSettings());
+            var setting = new CefSettings();
+            setting.Locale = "zh-Cn";
+            //setting.CefCommandLineArgs.Add("enable-system-flash", "1");
+            //setting.CefCommandLineArgs.Add("enable-npapi", "1");
+            //setting.CefCommandLineArgs.Add("enable-media-stream", "1"); //启用媒体流
+            setting.CefCommandLineArgs.Add("ppapi-flash-path", "pepflashplayer.dll");
+            setting.CefCommandLineArgs.Add("ppapi-flash-version", "99.0.0.0"); //设置flash插件版本
+                                                                                 //使用指定的flash插件，不使用系统安装的flash版本
+
+            Cef.Initialize(setting);
             IRequestContext requestContext = new RequestContext();
-            browser = new ChromiumWebBrowser("http://www.baidu.com", requestContext);
+            //browser = new ChromiumWebBrowser("http://www.baidu.com", requestContext);
+            browser = new ChromiumWebBrowser("https://www.huya.com/660000", requestContext);
             Font font = new Font("微软雅黑", 5.5f);
             this.Controls.Add(browser);
             browser.Font = font;
@@ -94,12 +104,16 @@ namespace EasyBrowser
 
             keyList.AddRange(new[]
             {
+                //调试
+                new MyKey{ id = 101,  keyA = HotKey.KeyModifiers.Ctrl, keyB = Keys.F12, op = operateMode.debugMode },
                 //关闭
                 new MyKey{ id = 102,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Q, op = operateMode.close },
                 new MyKey{ id = 1021, keyA = HotKey.KeyModifiers.Alt, keyB = Keys.O, op = operateMode.close },
                 new MyKey{ id = 1022, keyA = HotKey.KeyModifiers.Ctrl, keyB = Keys.O, op = operateMode.close },
                 //搜索
                 new MyKey{ id = 103,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.F, op = operateMode.search },
+                //刷新
+                new MyKey{ id = 104,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.F5, op = operateMode.refresh },
                 //透明度
                 new MyKey{ id = 105,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Up, op = operateMode.addOpacity },
                 new MyKey{ id = 106,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Down, op = operateMode.reduceOpacity },
@@ -111,6 +125,8 @@ namespace EasyBrowser
                 //前进后退
                 new MyKey{ id = 1041,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.S, op = operateMode.prePage },
                 new MyKey{ id = 1042,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.D, op = operateMode.nextPage },
+                //无图模式
+                new MyKey{ id = 108,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.F2, op = operateMode.noImage },
 
             });
             //注册热键
@@ -134,6 +150,7 @@ namespace EasyBrowser
             MouseUp += Form1_MouseUp;
             MouseMove += Form1_MouseMove;
         }
+
 
         #endregion
         #region 事件
@@ -284,50 +301,6 @@ namespace EasyBrowser
         #endregion
 
         #region 方法
-        /// <summary>
-
-        /// 加载文本
-        /// </summary>
-        /// <param name="filePath">加载路径</param>
-        private void LoadText(string filePath)
-        {
-            StoryText = new string[300000];
-            Encoding ed = EncodingType.GetType(filePath);
-            HoleReader = new StreamReader(filePath, ed);     //读取文本
-            string line = "";
-            for (int i = 1; (line = HoleReader.ReadLine()) != null; i++)
-            {
-                if (line == "")
-                {
-                    i--;
-                    continue;
-                }
-                int j = 1;
-                if (line.Length > textWide) //换行
-                {
-                    int len = line.Length;
-                    StoryText[i] = line.Substring(0, textWide);
-                    while (len - j * textWide > 0)
-                    {
-                        int leftWord = len - j * textWide;
-                        if (leftWord > textWide)
-                        {
-                            StoryText[i + j] = line.Substring(j * textWide, textWide);
-                        }
-                        else
-                        {
-                            StoryText[i + j] = line.Substring(j * textWide, leftWord);
-                        }
-                        j++;
-                    }
-                    i += j - 1;
-                }
-                else
-                {
-                    StoryText[i] = line;
-                }
-            }
-        }
 
         private void FormClose()
         {
@@ -359,7 +332,12 @@ namespace EasyBrowser
                     switch (op)
                     {
                         case operateMode.notExist: break;
-                       
+
+                        //调试
+                        case operateMode.debugMode:
+                            browser.ShowDevTools();
+                            break;
+
                         //关闭
                         case operateMode.close:
                             FormClose();
@@ -421,6 +399,10 @@ namespace EasyBrowser
                             break;
                         case operateMode.prePage:
                             browser.Back();
+                            break;
+                        //刷新页面
+                        case operateMode.refresh:
+                            browser.Refresh();
                             break;
                     }
                     break;

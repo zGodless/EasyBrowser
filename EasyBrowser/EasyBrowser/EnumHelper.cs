@@ -33,7 +33,13 @@ namespace EasyBrowser
         [Description("窗体拖动：左")]
         formLeft = 9,
         [Description("窗体拖动：右")]
-        formRight = 10
+        formRight = 10,
+        [Description("刷新")]
+        refresh = 11,
+        [Description("无图模式")]
+        noImage = 12,
+        [Description("调试")]
+        debugMode = 13
     }
 
 

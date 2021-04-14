@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using CefSharp;
 using CefSharp.WinForms;
 using EasyAndLazy;
+using Microsoft.Web.WebView2.Core;
 
 namespace EasyBrowser
 {
@@ -20,7 +21,7 @@ namespace EasyBrowser
         public Form1()
         {
             InitializeComponent();
-            InitBrowser();
+            //InitBrowser();
             InitEvent();
             Init();
         }
@@ -28,7 +29,7 @@ namespace EasyBrowser
         {
             SendToHandle = Handle;
             InitializeComponent();
-            InitBrowser();
+            //InitBrowser();
             InitEvent();
             Init();
         }
@@ -138,7 +139,7 @@ namespace EasyBrowser
         }
 
 
-        public void InitEvent()
+        public async void InitEvent()
         {
             Load += Form1_Load;
 
@@ -149,6 +150,10 @@ namespace EasyBrowser
             this.MouseDown += Form1_MouseDown1;
             MouseUp += Form1_MouseUp;
             MouseMove += Form1_MouseMove;
+            webView.NavigationStarting += WebView_NavigationStarting;
+
+            await webView.EnsureCoreWebView2Async();
+            webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
         }
 
 
@@ -204,6 +209,7 @@ namespace EasyBrowser
             int h = Convert.ToInt32(ini.IniReadValue(section, "Height"));     //获取上次窗体高度
             Width = w;
             Height = h;
+
         }
 
         private void btn_MouseUp(object sender, MouseEventArgs e)
@@ -295,6 +301,15 @@ namespace EasyBrowser
                 this.Cursor = Cursors.Arrow;//改变鼠标样式为原样
                 isMouseDown = false;
                 //SendMessage(this.Handle, WM_SYSCOMMAND, SC_MOVE + HTCAPTION, 0);//鼠标移动事件
+            }
+        }
+
+        private void WebView_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)
+        {
+            String uri = e.Uri;
+            if (!(uri.StartsWith("http://") || uri.StartsWith("https://")))
+            {
+                e.Cancel = true;
             }
         }
 
@@ -395,14 +410,14 @@ namespace EasyBrowser
                             break;
                         //前进后退
                         case operateMode.nextPage:
-                            browser.Forward();
+                            webView.GoForward();
                             break;
                         case operateMode.prePage:
-                            browser.Back();
+                            webView.GoBack();
                             break;
                         //刷新页面
                         case operateMode.refresh:
-                            browser.Refresh();
+                            webView.Reload();
                             break;
                     }
                     break;
@@ -414,7 +429,7 @@ namespace EasyBrowser
         //重定向URL
         private void FormUrl_RedirectEvent(string url)
         {
-            browser.Load(url);
+            GoToUrl(url);
             FormUrl.Dispose();
             FormUrl.Close();//已打开，关闭
         }
@@ -447,6 +462,32 @@ namespace EasyBrowser
                 this.Cursor = Cursors.Arrow;
                 isMouseDown = false;
             }
+        }
+
+        private void GoToUrl(string url)
+        {
+            try
+            {
+                webView.CoreWebView2.Navigate(url);
+            }
+            catch(Exception ex)
+            {
+
+            }
+        }
+
+        /// <summary>
+        /// 跳转新页面，打开新窗体事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            //var deferral = e.GetDeferral();
+            //e.NewWindow = webView.CoreWebView2;
+            //deferral.Complete();
+            GoToUrl(e.Uri);
+            e.Handled = true;   //取消当前跳转
         }
 
         #endregion

@@ -118,6 +118,8 @@ namespace EasyBrowser
                 //透明度
                 new MyKey{ id = 105,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Up, op = operateMode.addOpacity },
                 new MyKey{ id = 106,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Down, op = operateMode.reduceOpacity },
+                new MyKey{ id = 105,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.E, op = operateMode.addOpacity },
+                new MyKey{ id = 106,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.W, op = operateMode.reduceOpacity },
                 //窗体移动
                 new MyKey{ id = 1071,  keyA = HotKey.KeyModifiers.Ctrl, keyB = Keys.Up, op = operateMode.formUp },
                 new MyKey{ id = 1072, keyA = HotKey.KeyModifiers.Ctrl, keyB = Keys.Down, op = operateMode.formDown },

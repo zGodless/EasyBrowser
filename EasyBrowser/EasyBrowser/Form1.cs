@@ -155,7 +155,7 @@ namespace EasyBrowser
             webView.NavigationStarting += WebView_NavigationStarting;
 
             await webView.EnsureCoreWebView2Async();
-            webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+            webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested; 
         }
 
 

@@ -112,4 +112,3 @@ F:\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\Easy
 F:\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.csproj.CopyComplete
 F:\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.exe
 F:\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.pdb
-F:\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.csproj.AssemblyReference.cache

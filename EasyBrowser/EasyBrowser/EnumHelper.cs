@@ -39,7 +39,21 @@ namespace EasyBrowser
         [Description("无图模式")]
         noImage = 12,
         [Description("调试")]
-        debugMode = 13
+        debugMode = 13,
+        [Description("向上滚动")]
+        rollUp= 14,
+        [Description("向下滚动")]
+        rollDown = 15,
+        [Description("保存书签")]
+        saveTag = 16,
+        [Description("打开书签列表")]
+        openTag = 17,
+        [Description("删除书签")]
+        deleteTag = 18,
+        [Description("保存历史记录")]
+        saveHistory = 19,
+        [Description("打开历史记录")]
+        openHistory = 20
     }
 
 

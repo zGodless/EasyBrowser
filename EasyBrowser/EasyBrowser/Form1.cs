@@ -1,18 +1,14 @@
-﻿using System;
+﻿using CefSharp;
+using CefSharp.WinForms;
+using Microsoft.Web.WebView2.Core;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Policy;
 using System.Windows.Forms;
-using CefSharp;
-using CefSharp.WinForms;
-using EasyAndLazy;
-using Microsoft.Web.WebView2.Core;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace EasyBrowser
 {
@@ -71,6 +67,12 @@ namespace EasyBrowser
         /// 自定义的消息ID
         /// </summary>
         public const int MYMESSAGE = USER + 1;
+        //历史记录窗体
+        public FormHistory formHistory;
+        public string CurHistory { get; set; }   //当前历史记录
+        //书签窗体
+        public FormTag formTag;
+        public string CurTag { get; set; }   //当前选择书签
         #endregion
         #region 初始化
         public void InitBrowser()
@@ -82,7 +84,7 @@ namespace EasyBrowser
             //setting.CefCommandLineArgs.Add("enable-media-stream", "1"); //启用媒体流
             setting.CefCommandLineArgs.Add("ppapi-flash-path", "pepflashplayer.dll");
             setting.CefCommandLineArgs.Add("ppapi-flash-version", "99.0.0.0"); //设置flash插件版本
-                                                                                 //使用指定的flash插件，不使用系统安装的flash版本
+                                                                               //使用指定的flash插件，不使用系统安装的flash版本
 
             Cef.Initialize(setting);
             IRequestContext requestContext = new RequestContext();
@@ -94,7 +96,7 @@ namespace EasyBrowser
             browser.Dock = DockStyle.Fill;
             browser.LifeSpanHandler = new OpenPageSelf();//实现同一窗口打开链接
             browser.LoadingStateChanged += LoadingStateChangeds;
-            
+
         }
         public void Init()
         {
@@ -130,7 +132,15 @@ namespace EasyBrowser
                 new MyKey{ id = 1042,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.D, op = operateMode.nextPage },
                 //无图模式
                 new MyKey{ id = 108,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.F2, op = operateMode.noImage },
-
+                //滚动
+                new MyKey{ id = 1091,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.J, op = operateMode.rollDown },
+                new MyKey{ id = 1092,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.U, op = operateMode.rollUp },
+                //书签
+                new MyKey{ id = 1101,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.T, op = operateMode.saveTag },
+                new MyKey{ id = 1102,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.R, op = operateMode.openTag },
+                new MyKey{ id = 1103,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.E, op = operateMode.deleteTag },
+                //历史记录
+                new MyKey{ id = 1111,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.H, op = operateMode.openHistory },
             });
             //注册热键
             keyList.ForEach(m => HotKey.RegisterHotKey(Handle, m.id, m.keyA, m.keyB));
@@ -153,14 +163,55 @@ namespace EasyBrowser
             MouseUp += Form1_MouseUp;
             MouseMove += Form1_MouseMove;
             webView.NavigationStarting += WebView_NavigationStarting;
+            webView.NavigationCompleted += WebView_NavigationCompleted;
 
             await webView.EnsureCoreWebView2Async();
-            webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested; 
+            webView.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+            webView.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
+            webView.CoreWebView2.HistoryChanged += CoreWebView2_HistoryChanged;
+        }
+
+        private void WebView_NavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        {
+            #if DEBUG
+            Console.WriteLine("NavigationCompleted");
+            #endif
+        }
+        private void CoreWebView2_HistoryChanged(object sender, object e)
+        {
+#if DEBUG
+            Console.WriteLine("HistoryChanged:" + webView.Source.AbsoluteUri);
+#endif
+            var historyFilePath = Application.StartupPath + "/history.txt";
+            QueueManager queueManager = new QueueManager(historyFilePath);
+            queueManager.AddQueue(webView.Source.AbsoluteUri);//添加历史记录
+        }
+
+        private void CoreWebView2_WebResourceRequested(object sender, CoreWebView2WebResourceRequestedEventArgs e)
+        {
+#if DEBUG
+            Console.WriteLine("WebResourceRequested");
+#endif
         }
 
 
         #endregion
         #region 事件
+
+
+        /// <summary>
+        /// 跳转新页面，打开新窗体事件
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
+        {
+            //var deferral = e.GetDeferral();
+            //e.NewWindow = webView.CoreWebView2;
+            //deferral.Complete();
+            GoToUrl(e.Uri);
+            e.Handled = true;   //取消当前跳转
+        }
 
         /// <summary>
         /// 加载
@@ -233,7 +284,7 @@ namespace EasyBrowser
                 this.Top += MousePosition.Y - currentYPosition;//根据鼠标的y坐标窗体的顶部，即Y坐标  
                 currentXPosition = MousePosition.X;
                 currentYPosition = MousePosition.Y;
-            } 
+            }
         }
 
         private void btn_MouseDown(object sender, MouseEventArgs e)
@@ -309,6 +360,8 @@ namespace EasyBrowser
         private void WebView_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)
         {
             String uri = e.Uri;
+            var kind = e.NavigationKind;
+            Console.WriteLine("NavigationStarting:" + uri + ", kind:" + kind.ToString());
             if (!(uri.StartsWith("http://") || uri.StartsWith("https://")))
             {
                 e.Cancel = true;
@@ -364,6 +417,7 @@ namespace EasyBrowser
                             if (FormUrl == null || FormUrl.IsDisposed)
                             {
                                 FormUrl = new FormURL();
+                                FormUrl.TopMost = true;
                                 //重定向
                                 FormUrl.RedirectEvent += FormUrl_RedirectEvent;
                                 if (FormUrl.ShowDialog() == DialogResult.OK)
@@ -378,16 +432,24 @@ namespace EasyBrowser
                             break;
                         //减透明度
                         case operateMode.reduceOpacity:
-                            if (Opacity > 0.01f)
+                            if (Opacity > 0.02d)
                             {
                                 Opacity -= 0.01;
+                            }
+                            else
+                            {
+                                Opacity -= 0.002;
                             }
                             break;
                         //加透明度
                         case operateMode.addOpacity:
-                            if (Opacity < 0.99f)
+                            if (Opacity < 0.99d && Opacity >= 0.02d)
                             {
                                 Opacity += 0.01;
+                            }
+                            else if (Opacity < 0.02d)
+                            {
+                                Opacity += 0.002;
                             }
                             break;
                         //窗体移动
@@ -420,6 +482,59 @@ namespace EasyBrowser
                         //刷新页面
                         case operateMode.refresh:
                             webView.Reload();
+                            break;
+                        //滚动
+                        case operateMode.rollUp:
+                            SendKeys.SendWait("{UP}");
+                            break;
+                        case operateMode.rollDown:
+                            SendKeys.SendWait("{DOWN}");
+                            break;
+                        //历史记录
+                        case operateMode.openHistory:
+                            if (formHistory == null || formHistory.IsDisposed)
+                            {
+                                formHistory = new FormHistory();
+                                formHistory.TopMost = true;
+                                if (formHistory.ShowDialog() == DialogResult.OK)
+                                {
+                                    CurHistory = formHistory.ChoosedHistory;
+                                    if (!string.IsNullOrEmpty(CurHistory))
+                                    {
+                                        GoToUrl(CurHistory);//定向到指定历史记录地址
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                formHistory.Dispose();
+                                formHistory.Close();//已打开，关闭
+                            }
+                            break;
+                        //书签
+                        case operateMode.openTag:
+                            if (formTag == null || formTag.IsDisposed)
+                            {
+                                formTag = new FormTag();
+                                formTag.TopMost = true;
+                                if (formTag.ShowDialog() == DialogResult.OK)
+                                {
+                                    CurTag = formTag.ChoosedTag;
+                                    if (!string.IsNullOrEmpty(CurTag))
+                                    {
+                                        GoToUrl(CurTag);//定向到指定书签地址
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                formTag.Dispose();
+                                formTag.Close();//已打开，关闭
+                            }
+                            break;
+                        case operateMode.saveTag:
+                            QueueManager queueManager = new QueueManager(Path.Combine(Application.StartupPath, "tag.txt"));
+                            queueManager.AddQueue(webView.Source.AbsoluteUri);
                             break;
                     }
                     break;
@@ -470,26 +585,17 @@ namespace EasyBrowser
         {
             try
             {
+                Console.WriteLine("GoToUrl:" + url);
+                if (!(url.StartsWith("http://") || url.StartsWith("https://")))
+                {
+                    url = "http://" + url;
+                }
                 webView.CoreWebView2.Navigate(url);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
-        }
-
-        /// <summary>
-        /// 跳转新页面，打开新窗体事件
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CoreWebView2_NewWindowRequested(object sender, CoreWebView2NewWindowRequestedEventArgs e)
-        {
-            //var deferral = e.GetDeferral();
-            //e.NewWindow = webView.CoreWebView2;
-            //deferral.Complete();
-            GoToUrl(e.Uri);
-            e.Handled = true;   //取消当前跳转
         }
 
         #endregion

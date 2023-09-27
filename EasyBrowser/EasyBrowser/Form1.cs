@@ -118,8 +118,8 @@ namespace EasyBrowser
                 //刷新
                 new MyKey{ id = 104,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.F5, op = operateMode.refresh },
                 //透明度
-                new MyKey{ id = 105,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Up, op = operateMode.addOpacity },
-                new MyKey{ id = 106,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Down, op = operateMode.reduceOpacity },
+                //new MyKey{ id = 105,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Up, op = operateMode.addOpacity },
+                //new MyKey{ id = 106,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Down, op = operateMode.reduceOpacity },
                 new MyKey{ id = 105,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.E, op = operateMode.addOpacity },
                 new MyKey{ id = 106,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.W, op = operateMode.reduceOpacity },
                 //窗体移动
@@ -133,8 +133,8 @@ namespace EasyBrowser
                 //无图模式
                 new MyKey{ id = 108,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.F2, op = operateMode.noImage },
                 //滚动
-                new MyKey{ id = 1091,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.J, op = operateMode.rollDown },
-                new MyKey{ id = 1092,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.U, op = operateMode.rollUp },
+                new MyKey{ id = 1091,  keyA = HotKey.KeyModifiers.None, keyB = Keys.D9, op = operateMode.rollDown },
+                new MyKey{ id = 1092,  keyA = HotKey.KeyModifiers.None, keyB = Keys.D0, op = operateMode.rollUp },
                 //书签
                 new MyKey{ id = 1101,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.T, op = operateMode.saveTag },
                 new MyKey{ id = 1102,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.R, op = operateMode.openTag },
@@ -486,8 +486,10 @@ namespace EasyBrowser
                         //滚动
                         case operateMode.rollUp:
                             SendKeys.SendWait("{UP}");
+                            SendKeys.SendWait("{UP}");
                             break;
                         case operateMode.rollDown:
+                            SendKeys.SendWait("{DOWN}");
                             SendKeys.SendWait("{DOWN}");
                             break;
                         //历史记录

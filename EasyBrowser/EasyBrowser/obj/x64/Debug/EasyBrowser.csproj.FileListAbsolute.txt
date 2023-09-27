@@ -152,8 +152,5 @@ E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\Ea
 E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.csproj.CopyComplete
 E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.exe
 E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.pdb
-E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\bin\x64\Debug\tag.txt
-E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\bin\x64\Debug\history.txt
-E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\bin\x64\Debug\indexConfig.ini
 E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.FormHistory.resources
 E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.FormTag.resources

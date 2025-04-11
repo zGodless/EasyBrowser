@@ -94,6 +94,12 @@
     <Compile Include="DllImport.cs" />
     <Compile Include="EncodingType.cs" />
     <Compile Include="FilterManager.cs" />
+    <Compile Include="FormNavigate.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormNavigate.Designer.cs">
+      <DependentUpon>FormNavigate.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormTag.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -131,6 +137,9 @@
     <Compile Include="Rect.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormNavigate.resx">
+      <DependentUpon>FormNavigate.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="FormTag.resx">
       <DependentUpon>FormTag.cs</DependentUpon>

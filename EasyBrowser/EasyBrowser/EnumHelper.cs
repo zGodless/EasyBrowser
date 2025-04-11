@@ -53,7 +53,11 @@ namespace EasyBrowser
         [Description("保存历史记录")]
         saveHistory = 19,
         [Description("打开历史记录")]
-        openHistory = 20
+        openHistory = 20,
+        [Description("窗体定位拖动")]
+        navigateButton = 21,
+        [Description("长按Q键")]
+        longPressQ = 22
     }
 
 

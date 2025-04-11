@@ -154,3 +154,4 @@ E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\Ea
 E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.pdb
 E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.FormHistory.resources
 E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.FormTag.resources
+E:\G\zyl\Github\EasyBrowser\EasyBrowser\EasyBrowser\EasyBrowser\obj\x64\Debug\EasyBrowser.FormNavigate.resources

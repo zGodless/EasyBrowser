@@ -73,6 +73,12 @@ namespace EasyBrowser
         //书签窗体
         public FormTag formTag;
         public string CurTag { get; set; }   //当前选择书签
+
+        public bool isShowNavigateForm = false;//定位按钮是否显示
+        public FormNavigate formNavigate = new FormNavigate();
+
+        public System.Timers.Timer timer;//键盘模拟按键脚本定时器
+
         #endregion
         #region 初始化
         public void InitBrowser()
@@ -132,15 +138,21 @@ namespace EasyBrowser
                 new MyKey{ id = 1042,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.D, op = operateMode.nextPage },
                 //无图模式
                 new MyKey{ id = 108,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.F2, op = operateMode.noImage },
-                //滚动
-                new MyKey{ id = 1091,  keyA = HotKey.KeyModifiers.None, keyB = Keys.D9, op = operateMode.rollDown },
-                new MyKey{ id = 1092,  keyA = HotKey.KeyModifiers.None, keyB = Keys.D0, op = operateMode.rollUp },
+                ////滚动
+                new MyKey{ id = 1091,  keyA = HotKey.KeyModifiers.None, keyB = Keys.OemMinus, op = operateMode.rollDown },
+                new MyKey{ id = 1092,  keyA = HotKey.KeyModifiers.None, keyB = Keys.Oemplus, op = operateMode.rollUp },
+                //new MyKey{ id = 1091,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.D9, op = operateMode.rollDown },
+                //new MyKey{ id = 1092,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.D0, op = operateMode.rollUp },
                 //书签
                 new MyKey{ id = 1101,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.T, op = operateMode.saveTag },
                 new MyKey{ id = 1102,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.R, op = operateMode.openTag },
                 new MyKey{ id = 1103,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.E, op = operateMode.deleteTag },
                 //历史记录
                 new MyKey{ id = 1111,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.H, op = operateMode.openHistory },
+                //窗体定位拖动
+                new MyKey{ id = 1201,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.NumPad0, op = operateMode.navigateButton },
+                //长按Q键
+                new MyKey{ id = 1301,  keyA = HotKey.KeyModifiers.Alt, keyB = Keys.Back, op = operateMode.longPressQ },
             });
             //注册热键
             keyList.ForEach(m => HotKey.RegisterHotKey(Handle, m.id, m.keyA, m.keyB));
@@ -486,10 +498,8 @@ namespace EasyBrowser
                         //滚动
                         case operateMode.rollUp:
                             SendKeys.SendWait("{UP}");
-                            SendKeys.SendWait("{UP}");
                             break;
                         case operateMode.rollDown:
-                            SendKeys.SendWait("{DOWN}");
                             SendKeys.SendWait("{DOWN}");
                             break;
                         //历史记录
@@ -538,11 +548,52 @@ namespace EasyBrowser
                             QueueManager queueManager = new QueueManager(Path.Combine(Application.StartupPath, "tag.txt"));
                             queueManager.AddQueue(webView.Source.AbsoluteUri);
                             break;
+                        case operateMode.navigateButton:
+                            if (!isShowNavigateForm)
+                            {
+                                formNavigate = new FormNavigate();
+                                formNavigate.location = new Point(Location.X - 20, Location.Y);
+                                formNavigate.formMain = this;
+                                isShowNavigateForm = true;
+                                formNavigate.ShowDialog();
+                            }
+                            else
+                            {
+                                isShowNavigateForm = false;
+                                formNavigate.location = new Point(Location.X - 20, Location.Y);
+                                formNavigate.Close();
+                            }
+                            break;
+                        case operateMode.longPressQ://定时模拟按键Q
+                            {
+                                if(timer == null)
+                                {
+                                    timer = new System.Timers.Timer(100);
+                                    timer.Elapsed += Timer_Elapsed;
+                                    timer.Start();
+                                }
+                                else
+                                {
+                                    timer.Stop();
+                                    timer = null;
+                                }
+                                break;
+                            }
                     }
                     break;
 
             }
             base.WndProc(ref m);
+        }
+
+        /// <summary>
+        /// 定时模拟按键Q
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        {
+            SendKeys.SendWait("{Q}");
         }
 
         //重定向URL
